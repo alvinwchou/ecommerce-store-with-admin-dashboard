@@ -5,18 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import axios from "axios";
-import { getDatabase, onValue, ref } from "firebase/database";
 import db from "../firebase";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import {
   collection,
   count,
-  doc,
   getAggregateFromServer,
-  getDocs,
+  getCountFromServer,
   query,
   sum,
+  where,
 } from "firebase/firestore";
 
 interface Product {
@@ -51,9 +49,9 @@ type Order = {
 };
 
 async function getSalesData() {
-  // create a reference to collection
+  // create a reference to order
   const orderRef = collection(db, "Order");
-  // get the total number of sales and sum of salse
+  // get the total number of sales and sum of sales
   const snapshot = await getAggregateFromServer(orderRef, {
     amount: sum("pricePaidInCents"),
     numberOfSales: count(),
@@ -66,21 +64,59 @@ async function getSalesData() {
 }
 
 async function getUserData() {
-  // get total user count and average sales per user
+  // create a reference to user and order
+  const userRef = collection(db, "User");
+  const orderRef = collection(db, "User");
+  // grab the information from db
+  const [userSnapshot, orderSnapshot] = await Promise.all([
+    getCountFromServer(userRef),
+    getAggregateFromServer(orderRef, {
+      amount: sum("pricePaidInCents"),
+    }),
+  ]);
 
-  return { userCount: 0, averageValuePerUser: 0 };
+  // get total user count and total sales
+  const userCount = userSnapshot.data().count;
+  const amount = orderSnapshot.data().amount;
+
+  // return total user count and average sale per user
+  return {
+    userCount,
+    averageValuePerUser: userCount === 0 ? 0 : (amount || 0) / userCount / 100,
+  };
 }
 
 async function getProductData() {
-  // get total amount of product (active and inactive)
+  // create a reference to product
+  const productRef = collection(db, "Product");
 
-  return { activeCount: 0, inactiveCount: 0 };
+  const [activeSnapshot, inactiveSnapshot] = await Promise.all([
+    getCountFromServer(
+      query(productRef, where("isAvailableForPurchase", "==", true))
+    ),
+    getCountFromServer(
+      query(productRef, where("isAvailableForPurchase", "==", false))
+    ),
+  ]);
+
+  // get total amount of product (active and inactive)
+  const activeCount = activeSnapshot.data().count;
+  const inactiveCount = inactiveSnapshot.data().count;
+
+  return { activeCount, inactiveCount };
 }
 
 export default async function AdminDashboard() {
-  const salesData = await getSalesData();
-  const userData = await getUserData();
-  const productData = await getProductData();
+  // const salesData = await getSalesData();
+  // const userData = await getUserData();
+  // const productData = await getProductData();
+  // make all the calls in parallel
+  const [salesData, userData, productData] = await Promise.all([
+    getSalesData(),
+    getUserData(),
+    getProductData(),
+  ]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <DashboardCard
