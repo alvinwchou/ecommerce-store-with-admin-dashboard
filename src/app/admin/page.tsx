@@ -7,8 +7,17 @@ import {
 } from "@/components/ui/card";
 import axios from "axios";
 import { getDatabase, onValue, ref } from "firebase/database";
-import firebase from "../firebase";
+import db from "../firebase";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
+import {
+  collection,
+  count,
+  doc,
+  getAggregateFromServer,
+  getDocs,
+  query,
+  sum,
+} from "firebase/firestore";
 
 interface Product {
   id: string;
@@ -42,10 +51,20 @@ type Order = {
 };
 
 async function getSalesData() {
-  // get total number of sales and sum of sales
+  // create a reference to collection
+  const orderRef = collection(db, "Order");
+  // get the total number of sales and sum of salse
+  const snapshot = await getAggregateFromServer(orderRef, {
+    amount: sum("pricePaidInCents"),
+    numberOfSales: count(),
+  });
 
-  return { amount: 0, numberOfSales: 0 };
+  return {
+    amount: (snapshot.data().amount || 0) / 100,
+    numberOfSales: snapshot.data().numberOfSales,
+  };
 }
+
 async function getUserData() {
   // get total user count and average sales per user
 

@@ -1,21 +1,23 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBZksZCR7QvdZOi5gDZakilShIGohTicTM",
-  authDomain: "ecommerce-store-e07ea.firebaseapp.com",
-  projectId: "ecommerce-store-e07ea",
-  storageBucket: "ecommerce-store-e07ea.appspot.com",
-  messagingSenderId: "688701502373",
-  appId: "1:688701502373:web:1eaf2765bb9cc88233ae4c",
-  measurementId: "G-G1CFRGKPEX"
+  apiKey: "AIzaSyC0tGsANK_qBdiyU2NOb4HQHz4XscFagNs",
+  authDomain: "e-commerce-store-61f99.firebaseapp.com",
+  projectId: "e-commerce-store-61f99",
+  storageBucket: "e-commerce-store-61f99.appspot.com",
+  messagingSenderId: "1991945143",
+  appId: "1:1991945143:web:9ae2892b77b7df8d9bd632"
 };
 
 // Initialize Firebase
 const firebase = initializeApp(firebaseConfig);
 
-export default firebase
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(firebase);
+
+export default db
