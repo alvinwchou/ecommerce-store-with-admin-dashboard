@@ -12,21 +12,24 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
 interface Product {
+  id: string;
   name: string;
   pricePaidInCents: number;
-  description: string;
   filePath: string;
   imagePath: string;
+  description: string;
+  isAvailableForPurchase: boolean;
 }
 
-export function ProductForm() {
-  const [priceInCents, setPriceInCents] = useState<number>();
+export function ProductForm({productData}: {productData?: Product | null}) {
   const [product, setProduct] = useState<Product>({
-    name: "",
-    pricePaidInCents: 0,
-    description: "",
-    filePath: "",
-    imagePath: "",
+    id: productData ? productData.id : "",
+    name: productData ? productData.name : "",
+    pricePaidInCents: productData ? productData.pricePaidInCents : 0,
+    description: productData ? productData.description : "",
+    filePath: productData ? productData.filePath : "",
+    imagePath: productData ? productData.imagePath : "",
+    isAvailableForPurchase: productData ? productData.isAvailableForPurchase : false,
   });
 
   async function addProduct() {
@@ -52,6 +55,7 @@ export function ProductForm() {
           id="name"
           name="name"
           required
+          defaultValue={product?.name}
           onChange={(e) => setProduct({ ...product, name: e.target.value })}
           value={product.name}
         />
@@ -78,6 +82,7 @@ export function ProductForm() {
           id="description"
           name="description"
           required
+          defaultValue={product?.description}
           onChange={(e) =>
             setProduct({ ...product, description: e.target.value })
           }
@@ -90,7 +95,8 @@ export function ProductForm() {
           type="file"
           id="file"
           name="file"
-          required
+          // only required if we are adding new product, because when we edit we do not want to force user to pass in a new file
+          required={product == null}
           onChange={(e) => setProduct({ ...product, filePath: e.target.value })}
           value={product.filePath}
         />
@@ -101,7 +107,8 @@ export function ProductForm() {
           type="file"
           id="image"
           name="image"
-          required
+          // only required if we are adding new product, because when we edit we do not want to force user to pass in a new file
+          required={product == null}
           onChange={(e) =>
             setProduct({ ...product, imagePath: e.target.value })
           }
