@@ -11,8 +11,19 @@ import {
 } from "@/components/ui/table";
 import { collection, getDocs } from "firebase/firestore";
 import db from "@/app/firebase";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, MoreVertical, XCircle } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ActiveToggleDropdownItem,
+  DeleteDropdownItem,
+} from "./_components/ProductAction";
 
 interface Product {
   id: string;
@@ -85,15 +96,50 @@ async function ProductsTable() {
             <TableCell>
               {product.isAvailableForPurchase ? (
                 <>
-                  <CheckCircle2 />
                   <span className="sr-only">Available</span>
+                  <CheckCircle2 />
                 </>
               ) : (
                 <>
-                  <XCircle />
                   <span className="sr-only">Unavailable</span>
+                  <XCircle className="stroke-destructive" />
                 </>
               )}
+            </TableCell>
+            <TableCell>{product.name}</TableCell>
+            <TableCell>
+              {formatCurrency(product.pricePaidInCents / 100)}
+            </TableCell>
+            <TableCell>{formatNumber(product.orderCount)}</TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <MoreVertical />
+                  <span className="sr-only">Action</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    {/* we are using an anchor tag instead of Link because we are sending the user to an api route and not a particular page */}
+                    <a download href={`/admin/products/${product.id}/download`}>
+                      Download
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/admin/products/${product.id}/edit`}>
+                      Edit
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <ActiveToggleDropdownItem
+                    id={product.id}
+                    isAvailableForPurchase={product.isAvailableForPurchase}
+                  />
+                  <DeleteDropdownItem
+                    id={product.id}
+                    disabled={product.orderCount > 0}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
             </TableCell>
           </TableRow>
         ))}
