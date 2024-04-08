@@ -1,6 +1,6 @@
 "use client";
 
-import db from "@/app/firebase";
+import { db } from "@/app/firebase";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,6 @@ export function ActiveToggleDropdownItem({
             isAvailableForPurchase: !isAvailableForPurchase,
           });
           router.refresh();
-          console.log("available");
         });
       }}
     >
@@ -72,7 +71,14 @@ export function DeleteDropdownItem({
         startTransition(async () => {
           await deleteProduct(id);
           router.refresh();
-          console.log("deleted");
+
+
+
+
+
+
+
+          
         });
       }}
     >

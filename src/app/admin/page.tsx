@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import db from "../firebase";
+import { db } from "../firebase";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import {
   collection,

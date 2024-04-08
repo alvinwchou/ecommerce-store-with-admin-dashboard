@@ -1,13 +1,15 @@
 "use client";
 
-import db from "@/app/firebase";
+import { db, storage } from "@/app/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { doc, setDoc } from "firebase/firestore";
-import { redirect } from "next/navigation";
+import { ref, uploadBytes } from "firebase/storage";
+import Image from "next/image";
+import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -15,13 +17,15 @@ interface Product {
   id: string;
   name: string;
   pricePaidInCents: number;
+  file?: File | null;
   filePath: string;
+  image?: File | null;
   imagePath: string;
   description: string;
   isAvailableForPurchase: boolean;
 }
 
-export function ProductForm({productData}: {productData?: Product | null}) {
+export function ProductForm({ productData }: { productData?: Product | null }) {
   const [product, setProduct] = useState<Product>({
     id: productData ? productData.id : "",
     name: productData ? productData.name : "",
@@ -29,23 +33,45 @@ export function ProductForm({productData}: {productData?: Product | null}) {
     description: productData ? productData.description : "",
     filePath: productData ? productData.filePath : "",
     imagePath: productData ? productData.imagePath : "",
-    isAvailableForPurchase: productData ? productData.isAvailableForPurchase : false,
+    isAvailableForPurchase: productData
+      ? productData.isAvailableForPurchase
+      : false,
   });
 
+  const router = useRouter()
+
+  
   async function addProduct() {
+    // create file path
+    const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
+    if (product.file) {
+      // create reference to full path
+      const fileRef = ref(storage, file);
+      // upload the image
+      await uploadBytes(fileRef, product.file);
+    }
+
+    // create image path
+    const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
+    if (product.image) {
+      // create reference to full path
+      const imageRef = ref(storage, image);
+      // upload the image
+      await uploadBytes(imageRef, product.image);
+    }
+
     await setDoc(doc(db, "Product", crypto.randomUUID()), {
       name: product.name,
       pricePaidInCents: product.pricePaidInCents,
       description: product.description,
-      filePath: product.filePath,
-      imagePath: product.imagePath,
+      filePath: file,
+      imagePath: image,
       isAvailableForPurchase: false,
       createdAt: new Date(),
     });
-
     redirect("/admin/products");
   }
-
+  console.log(product.imagePath);
   return (
     <form action={addProduct} className="space-y-8">
       <div className="space-y-2">
@@ -97,9 +123,16 @@ export function ProductForm({productData}: {productData?: Product | null}) {
           name="file"
           // only required if we are adding new product, because when we edit we do not want to force user to pass in a new file
           required={product == null}
-          onChange={(e) => setProduct({ ...product, filePath: e.target.value })}
-          value={product.filePath}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              const file = e.target.files[0];
+              setProduct({ ...product, file: file });
+            }
+          }}
         />
+        {product != null && (
+          <div className="text-muted-foreground">{product.filePath}</div>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="image">Image</Label>
@@ -109,11 +142,14 @@ export function ProductForm({productData}: {productData?: Product | null}) {
           name="image"
           // only required if we are adding new product, because when we edit we do not want to force user to pass in a new file
           required={product == null}
-          onChange={(e) =>
-            setProduct({ ...product, imagePath: e.target.value })
-          }
-          value={product.imagePath}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              const file = e.target.files[0];
+              setProduct({ ...product, image: file });
+            }
+          }}
         />
+        {/* {product.imagePath != "" && <Image src= width="400" height="400" alt="Product Image"/>} */}
       </div>
       <SubmitButton />
     </form>

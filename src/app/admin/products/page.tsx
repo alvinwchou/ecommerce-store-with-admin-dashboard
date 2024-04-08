@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { collection, getDocs } from "firebase/firestore";
-import db from "@/app/firebase";
+import { db } from "@/app/firebase";
 import { CheckCircle2, MoreVertical, XCircle } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import {
@@ -64,7 +64,7 @@ async function ProductsTable() {
         name: productData.name,
         pricePaidInCents: productData.pricePaidInCents,
         isAvailableForPurchase: productData.isAvailableForPurchase,
-        orderCount: productData.order?.length() || 0,
+        orderCount: productData.order?.length || 0,
       };
 
       // push it to products
