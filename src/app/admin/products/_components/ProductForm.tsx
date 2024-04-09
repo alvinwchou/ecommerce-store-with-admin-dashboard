@@ -38,11 +38,12 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
       : false,
   });
 
-  // const [error, action] = useFormState(product == null ? addProduct : updateProduct.bind(null, product.id), {})
-  const [error, action] = useFormState( addProduct, {})
+  const [error, action] = useFormState(product.id == "" ? addProduct : updateProduct.bind(null, product.id), {})
+  // const [error, action] = useFormState( addProduct, {})
   const router = useRouter();
 
   async function addProduct() {
+    console.log("add", product)
     // create file path
     const file = `product/${crypto.randomUUID()}-${product.file?.name}`;
     if (product.file) {
@@ -75,40 +76,37 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
 
   async function updateProduct(id: string) {
     // if user is updating the file we have to remove and add a the new one
-
     let newFilePath = product.filePath
-    console.log(product.file, product.file?.size)
-    // if (product.file && product.file.size) {
-    //   //remove the old file
-    //   const oldFileRef = ref(storage, product.filePath);
-    //   // await deleteObject(oldFileRef);
+    if (product.file && product.file.size) {
+      //remove the old file
+      const oldFileRef = ref(storage, product.filePath);
+      await deleteObject(oldFileRef);
 
-    //   // create new file path
-    //   const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
-    //   // create reference to full path
-    //   const fileRef = ref(storage, file);
-    //   // upload the new file
-    //   // await uploadBytes(fileRef, product.file);
+      // create new file path
+      const file = `product/${crypto.randomUUID()}-${product.file?.name}`;
+      // create reference to full path
+      const fileRef = ref(storage, file);
+      // upload the new file
+      await uploadBytes(fileRef, product.file);
       
-
-    //   newFilePath = file;
-    // }
+      newFilePath = file;
+    }
 
     let newImagePath = product.imagePath
-    // if (product.image && product.image.size) {
-    //   // remove the old image
-    //   const oldImageRef = ref(storage, product.imagePath);
-    //   await deleteObject(oldImageRef);
+    if (product.image && product.image.size) {
+      // remove the old image
+      const oldImageRef = ref(storage, product.imagePath);
+      await deleteObject(oldImageRef);
 
-    //   // create new image path
-    //   const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
-    //   // create reference to full path
-    //   const imageRef = ref(storage, image);
-    //   // upload the new image
-    //   await uploadBytes(imageRef, product.image);
+      // create new image path
+      const image = `images/${crypto.randomUUID()}-${product.image?.name}`;
+      // create reference to full path
+      const imageRef = ref(storage, image);
+      // upload the new image
+      await uploadBytes(imageRef, product.image);
 
-    //   newImagePath = image;
-    // }
+      newImagePath = image;
+    }
 
     await updateDoc(doc(db, "Product", id), {
       name: product.name,
