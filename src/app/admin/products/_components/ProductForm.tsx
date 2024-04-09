@@ -38,12 +38,13 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
       : false,
   });
 
-  const [error, action] = useFormState(product == null ? addProduct : updateProduct.bind(null, product.id), {})
+  // const [error, action] = useFormState(product == null ? addProduct : updateProduct.bind(null, product.id), {})
+  const [error, action] = useFormState( addProduct, {})
   const router = useRouter();
 
   async function addProduct() {
     // create file path
-    const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
+    const file = `product/${crypto.randomUUID()}-${product.file?.name}`;
     if (product.file) {
       // create reference to full path
       const fileRef = ref(storage, file);
@@ -52,7 +53,7 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
     }
 
     // create image path
-    const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
+    const image = `images/${crypto.randomUUID()}-${product.image?.name}`;
     if (product.image) {
       // create reference to full path
       const imageRef = ref(storage, image);
