@@ -77,36 +77,38 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
     // if user is updating the file we have to remove and add a the new one
 
     let newFilePath = product.filePath
-    if (product.file && product.file.size) {
-      //remove the old file
-      const oldFileRef = ref(storage, product.filePath);
-      await deleteObject(oldFileRef);
+    console.log(product.file, product.file?.size)
+    // if (product.file && product.file.size) {
+    //   //remove the old file
+    //   const oldFileRef = ref(storage, product.filePath);
+    //   // await deleteObject(oldFileRef);
 
-      // create new file path
-      const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
-      // create reference to full path
-      const fileRef = ref(storage, file);
-      // upload the new file
-      await uploadBytes(fileRef, product.file);
+    //   // create new file path
+    //   const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
+    //   // create reference to full path
+    //   const fileRef = ref(storage, file);
+    //   // upload the new file
+    //   // await uploadBytes(fileRef, product.file);
+      
 
-      newFilePath = file;
-    }
+    //   newFilePath = file;
+    // }
 
     let newImagePath = product.imagePath
-    if (product.image && product.image.size) {
-      // remove the old image
-      const oldImageRef = ref(storage, product.imagePath);
-      await deleteObject(oldImageRef);
+    // if (product.image && product.image.size) {
+    //   // remove the old image
+    //   const oldImageRef = ref(storage, product.imagePath);
+    //   await deleteObject(oldImageRef);
 
-      // create new image path
-      const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
-      // create reference to full path
-      const imageRef = ref(storage, image);
-      // upload the new image
-      await uploadBytes(imageRef, product.image);
+    //   // create new image path
+    //   const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
+    //   // create reference to full path
+    //   const imageRef = ref(storage, image);
+    //   // upload the new image
+    //   await uploadBytes(imageRef, product.image);
 
-      newImagePath = image;
-    }
+    //   newImagePath = image;
+    // }
 
     await updateDoc(doc(db, "Product", id), {
       name: product.name,
@@ -115,7 +117,7 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
       filePath: newFilePath,
       imagePath: newImagePath,
       isAvailableForPurchase: product.isAvailableForPurchase,
-      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     redirect("/admin/products");
   }

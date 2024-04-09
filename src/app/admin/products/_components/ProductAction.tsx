@@ -1,8 +1,9 @@
 "use client";
 
-import { db } from "@/app/firebase";
+import { db, storage } from "@/app/firebase";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { deleteObject, ref } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -69,16 +70,22 @@ export function DeleteDropdownItem({
       disabled={disabled || isPending}
       onClick={() => {
         startTransition(async () => {
+          // get the product data
+          const productRef = doc(db, "Product", `${id}`);
+          const productSnapshot = await getDoc(productRef);
+          const productData = productSnapshot.data();
+
+          //remove file from db
+          const oldFileRef = ref(storage, productData?.filePath);
+          await deleteObject(oldFileRef);
+
+          //remove image from db
+          const oldImageRef = ref(storage, productData?.imagePath);
+          await deleteObject(oldImageRef);
+
+          // remove product from db
           await deleteProduct(id);
           router.refresh();
-
-
-
-
-
-
-
-          
         });
       }}
     >
