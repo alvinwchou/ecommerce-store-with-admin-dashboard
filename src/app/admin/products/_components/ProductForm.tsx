@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
-import { doc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
+import { deleteObject, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 
 interface Product {
   id: string;
@@ -38,16 +38,16 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
       : false,
   });
 
-  const router = useRouter()
+  const [error, action] = useFormState(product == null ? addProduct : updateProduct.bind(null, product.id), {})
+  const router = useRouter();
 
-  
   async function addProduct() {
     // create file path
     const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
     if (product.file) {
       // create reference to full path
       const fileRef = ref(storage, file);
-      // upload the image
+      // upload the file
       await uploadBytes(fileRef, product.file);
     }
 
@@ -71,9 +71,56 @@ export function ProductForm({ productData }: { productData?: Product | null }) {
     });
     redirect("/admin/products");
   }
-  console.log(product.imagePath);
+
+  async function updateProduct(id: string) {
+    // if user is updating the file we have to remove and add a the new one
+
+    let newFilePath = product.filePath
+    if (product.file && product.file.size) {
+      //remove the old file
+      const oldFileRef = ref(storage, product.filePath);
+      await deleteObject(oldFileRef);
+
+      // create new file path
+      const file = `product/${product.file?.name}-${crypto.randomUUID()}`;
+      // create reference to full path
+      const fileRef = ref(storage, file);
+      // upload the new file
+      await uploadBytes(fileRef, product.file);
+
+      newFilePath = file;
+    }
+
+    let newImagePath = product.imagePath
+    if (product.image && product.image.size) {
+      // remove the old image
+      const oldImageRef = ref(storage, product.imagePath);
+      await deleteObject(oldImageRef);
+
+      // create new image path
+      const image = `images/${product.image?.name}-${crypto.randomUUID()}`;
+      // create reference to full path
+      const imageRef = ref(storage, image);
+      // upload the new image
+      await uploadBytes(imageRef, product.image);
+
+      newImagePath = image;
+    }
+
+    await updateDoc(doc(db, "Product", id), {
+      name: product.name,
+      pricePaidInCents: product.pricePaidInCents,
+      description: product.description,
+      filePath: newFilePath,
+      imagePath: newImagePath,
+      isAvailableForPurchase: product.isAvailableForPurchase,
+      createdAt: new Date(),
+    });
+    redirect("/admin/products");
+  }
+
   return (
-    <form action={addProduct} className="space-y-8">
+    <form action={action} className="space-y-8">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
