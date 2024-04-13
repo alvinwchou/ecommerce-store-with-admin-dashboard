@@ -90,6 +90,7 @@ async function ProductsTable() {
           </TableHead>
         </TableRow>
       </TableHeader>
+
       <TableBody>
         {products.map((product) => (
           <TableRow key={product.id}>

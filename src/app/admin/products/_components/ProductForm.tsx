@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref, uploadBytes } from "firebase/storage";
-import Image from "next/image";
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
