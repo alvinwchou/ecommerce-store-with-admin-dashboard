@@ -150,3 +150,5 @@ async function ProductSuspense({
     <ProductCard key={product.id} {...product} />
   ));
 }
+
+// filter for popular product
